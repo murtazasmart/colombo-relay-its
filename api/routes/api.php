@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\MumineenController;
 use App\Http\Controllers\Api\MiqaatController;
 use App\Http\Controllers\Api\MiqaatEventController;
+use App\Http\Controllers\Api\AccommodationController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -26,12 +27,25 @@ Route::prefix('mumineen')->group(function () {
     Route::get('/', [MumineenController::class, 'index']);
     Route::post('/', [MumineenController::class, 'store']);
     Route::get('/search', [MumineenController::class, 'search']);
+    Route::get('/hofs', [MumineenController::class, 'getHofs']);
+    Route::get('/hof-by-its/{itsId}', [MumineenController::class, 'getHofByIts']);
+    Route::get('/family/{hofItsId}', [MumineenController::class, 'getFamilyByHofIts']);
     Route::get('/{id}', [MumineenController::class, 'show']);
     Route::put('/{id}', [MumineenController::class, 'update']);
     Route::delete('/{id}', [MumineenController::class, 'destroy']);
 });
 
 // Miqaat Routes
+// Accommodation Routes
+Route::prefix('accommodations')->group(function () {
+    Route::get('/', [AccommodationController::class, 'index']);
+    Route::post('/', [AccommodationController::class, 'store']);
+    Route::get('/family/{hofItsId}', [AccommodationController::class, 'getByHofIts']);
+    Route::get('/{id}', [AccommodationController::class, 'show']);
+    Route::put('/{id}', [AccommodationController::class, 'update']);
+    Route::delete('/{id}', [AccommodationController::class, 'destroy']);
+});
+
 Route::prefix('miqaats')->group(function () {
     Route::get('/', [MiqaatController::class, 'index']);
     Route::post('/', [MiqaatController::class, 'store']);

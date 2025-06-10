@@ -60,7 +60,7 @@ export default function MiqaatDetailsPage() {
     
     // Mock data for now
     setTimeout(() => {
-      const foundMiqaat = mockedMiqaats.find(m => m.id === parseInt(id));
+      const foundMiqaat = id ? mockedMiqaats.find(m => m.id === parseInt(id as string)) : null;
       setMiqaat(foundMiqaat || null);
       setIsLoading(false);
     }, 500);

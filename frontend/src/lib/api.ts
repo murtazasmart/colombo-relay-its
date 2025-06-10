@@ -157,6 +157,15 @@ export const MumineenApi = {
   getAllHofs: async () => {
     return fetchApi<Mumineen[]>('/mumineen/hofs');
   },
+
+  // Get head of family information for a specific user's ITS ID
+  getHofByIts: async (itsId: string) => {
+    return fetchApi<{
+      hof_its_id: string;
+      hof_details: Mumineen;
+      is_hof: boolean;
+    }>(`/mumineen/hof-by-its/${itsId}`);
+  },
 };
 
 // API endpoints for Accommodations

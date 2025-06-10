@@ -229,6 +229,104 @@ class MumineenController extends Controller
     }
     
     /**
+     * Get all family members for a specific Head of Family (HoF) by ITS ID.
+     *
+     * @param  string  $hofItsId
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getFamilyByHofIts(string $hofItsId)
+    {
+        try {
+            // First verify the HoF exists
+            $hofExists = Mumineen::where('its_id', $hofItsId)->exists();
+            
+            if (!$hofExists) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Head of Family not found'
+                ], Response::HTTP_NOT_FOUND);
+            }
+            
+            // Get all family members where hof_its_id matches the given hofItsId
+            $familyMembers = Mumineen::where('hof_its_id', $hofItsId)->get();
+            
+            // Also include the HoF themselves in the family members list
+            $hof = Mumineen::where('its_id', $hofItsId)->first();
+            if ($hof) {
+                // Only add the HoF if they're not already in the collection
+                $exists = $familyMembers->contains(function($member) use ($hofItsId) {
+                    return $member->its_id === $hofItsId;
+                });
+                
+                if (!$exists) {
+                    $familyMembers->push($hof);
+                }
+            }
+            
+            return response()->json([
+                'status' => 'success',
+                'data' => $familyMembers
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to retrieve family members',
+                'error' => $e->getMessage()
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+    
+    /**
+     * Get the Head of Family (HoF) ITS ID for a given user.
+     * If the user is the HoF, returns their own ITS ID.
+     *
+     * @param  string  $itsId
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getHofByIts(string $itsId)
+    {
+        try {
+            // Find the mumineen with the given ITS ID
+            $mumineen = Mumineen::where('its_id', $itsId)->first();
+            
+            if (!$mumineen) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Mumineen not found'
+                ], Response::HTTP_NOT_FOUND);
+            }
+            
+            // If hof_its_id is null or the same as its_id, this person is the HoF
+            $hofItsId = $mumineen->hof_its_id ?? $mumineen->its_id;
+            
+            // Get the HoF details
+            $hof = Mumineen::where('its_id', $hofItsId)->first();
+            
+            if (!$hof) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Head of Family not found'
+                ], Response::HTTP_NOT_FOUND);
+            }
+            
+            return response()->json([
+                'status' => 'success',
+                'data' => [
+                    'hof_its_id' => $hofItsId,
+                    'hof_details' => $hof,
+                    'is_hof' => ($mumineen->its_id === $hofItsId || $mumineen->hof_its_id === null)
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to retrieve Head of Family information',
+                'error' => $e->getMessage()
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+    
+    /**
      * Search for mumineen by name.
      *
      * @param  \Illuminate\Http\Request  $request

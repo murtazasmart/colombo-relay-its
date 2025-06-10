@@ -163,10 +163,32 @@ export default function AccommodationsPage() {
           setMiqaats(miqaatResponse.data);
         }
         
-        // Fetch all HoFs
-        const hofResponse = await MumineenApi.getAllHofs();
-        if (hofResponse.status === 'success' && Array.isArray(hofResponse.data)) {
-          setHofList(hofResponse.data);
+        // Get current user's ITS from local storage
+        const userItsId = localStorage.getItem('its_no');
+        if (userItsId) {
+          // Find HOF ITS ID for current user
+          const hofResponse = await MumineenApi.getHofByIts(userItsId);
+          if (hofResponse.status === 'success' && hofResponse.data) {
+            const { hof_its_id, is_hof } = hofResponse.data;
+            
+            // Load all HOFs for dropdown/search purposes
+            const allHofsResponse = await MumineenApi.getAllHofs();
+            if (allHofsResponse.status === 'success' && Array.isArray(allHofsResponse.data)) {
+              setHofList(allHofsResponse.data);
+            }
+            
+            // Auto-expand the current user's family details
+            if (hof_its_id) {
+              setExpandedFamilies(new Set([hof_its_id]));
+              await loadFamilyDetails(hof_its_id);
+            }
+          }
+        } else {
+          // No user ITS in storage, load all HOFs normally
+          const hofResponse = await MumineenApi.getAllHofs();
+          if (hofResponse.status === 'success' && Array.isArray(hofResponse.data)) {
+            setHofList(hofResponse.data);
+          }
         }
         
         // Fetch all accommodations (for statistics and filtering)
